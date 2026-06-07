@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mahjong Night Sign-Up</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
+
+    :root {
+      --pink:       #FF1493;
+      --pink-light: #FFE6F2;
+      --pink-mid:   rgba(255,20,147,0.12);
+      --green:      #2E9E52;
+      --green-light:#E6F7EC;
+      --green-mid:  rgba(46,158,82,0.15);
+      --white:      #ffffff;
+      --off-white:  #fafcfb;
+      --text:       #1a1a2e;
+      --muted:      #6b7280;
+      --border:     #e5e7eb;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--off-white);
+      background-image:
+        radial-gradient(circle at 10% 15%, rgba(255,20,147,0.06) 0%, transparent 45%),
+        radial-gradient(circle at 90% 80%, rgba(46,158,82,0.07) 0%, transparent 45%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px 16px 56px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--pink);
+      letter-spacing: 0.01em;
+    }
+
+    header p.tagline {
+      color: var(--green);
+      margin-top: 6px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* ── Event Details Card ── */
+    .event-card {
+      background: var(--white);
+      border: 2px solid var(--pink);
+      border-radius: 16px;
+      padding: 20px 28px;
+      margin-bottom: 28px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(255,20,147,0.08);
+    }
+
+    .event-detail {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .event-detail .label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .event-detail .value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .event-detail .value.unset {
+      color: #ccc;
+      font-weight: 400;
+      font-style: italic;
+    }
+
+    /* ── Tables ── */
+    .tables-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 560px) {
+      .tables-row { grid-template-columns: 1fr; }
+    }
+
+    .table-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .table-header {
+      background: var(--green);
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-header h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .table-header .seat-count {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.8);
+      font-weight: 500;
+    }
+
+    .seats-list {
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .seat {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--off-white);
+      border: 1.5px solid var(--border);
+    }
+
+    .seat.occupied {
+      background: var(--pink-light);
+      border-color: rgba(255,20,147,0.25);
+    }
+
+    .seat-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .seat.occupied .seat-icon {
+      background: var(--pink);
+      color: #fff;
+    }
+
+    .seat.empty .seat-icon {
+      background: #e5e7eb;
+      color: #aaa;
+    }
+
+    .seat-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .seat-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+
+    .seat.empty .seat-name {
+      color: #bbb;
+      font-weight: 400;
+    }
+
+    .seat-email {
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .seat-remove {
+      background: none;
+      border: none;
+      color: var(--pink);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      opacity: 0.5;
+      transition: opacity 0.15s;
+      display: none;
+    }
+
+    .admin-mode .seat-remove { display: block; }
+    .seat-remove:hover { opacity: 1; }
+
+    /* ── Waitlist ── */
+    .waitlist-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 28px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .waitlist-header {
+      background: var(--pink-light);
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1.5px solid rgba(255,20,147,0.15);
+    }
+
+    .waitlist-header h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--pink);
+    }
+
+    .waitlist-header .badge {
+      background: var(--pink);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 99px;
+    }
+
+    .waitlist-empty {
+      padding: 18px 20px;
+      color: #bbb;
+      font-size: 0.88rem;
+      font-style: italic;
+    }
+
+    .waitlist-list {
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .waitlist-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: var(--off-white);
+      border: 1px solid var(--border);
+    }
+
+    .waitlist-pos {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--green-light);
+      border: 1.5px solid var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+
+    .waitlist-info { flex: 1; min-width: 0; }
+    .waitlist-name { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+    .waitlist-email { font-size: 0.72rem; color: var(--muted); }
+
+    .waitlist-remove {
+      background: none;
+      border: none;
+      color: var(--pink);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      opacity: 0.5;
+      transition: opacity 0.15s;
+      display: none;
+    }
+
+    .admin-mode .waitlist-remove { display: block; }
+    .waitlist-remove:hover { opacity: 1; }
+
+    /* ── Sign-up Form ── */
+    .signup-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .signup-card h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      color: var(--green);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 480px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .form-group input {
+      background: var(--off-white);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--pink);
+      box-shadow: 0 0 0 3px rgba(255,20,147,0.1);
+    }
+
+    .form-group input::placeholder { color: #ccc; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+    }
+
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-primary {
+      background: var(--pink);
+      color: #fff;
+      width: 100%;
+      letter-spacing: 0.03em;
+      box-shadow: 0 4px 14px rgba(255,20,147,0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      opacity: 0.92;
+      box-shadow: 0 6px 18px rgba(255,20,147,0.35);
+    }
+
+    .form-message {
+      margin-top: 12px;
+      font-size: 0.88rem;
+      padding: 11px 16px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .form-message.success {
+      background: var(--green-light);
+      border: 1.5px solid rgba(46,158,82,0.35);
+      color: #1a7a3a;
+      display: block;
+    }
+
+    .form-message.error {
+      background: #fff0f0;
+      border: 1.5px solid rgba(255,20,147,0.3);
+      color: #c0125e;
+      display: block;
+    }
+
+    .form-message.info {
+      background: #f0f8ff;
+      border: 1.5px solid rgba(46,158,82,0.3);
+      color: #1a5fa0;
+      display: block;
+    }
+
+    /* ── Admin Panel ── */
+    .admin-toggle {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .btn-admin {
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      padding: 8px 20px;
+      font-size: 0.82rem;
+      border-radius: 10px;
+    }
+
+    .btn-admin:hover {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-light);
+    }
+
+    .admin-panel {
+      background: var(--white);
+      border: 2px solid var(--green);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      display: none;
+      box-shadow: 0 4px 20px rgba(46,158,82,0.1);
+    }
+
+    .admin-panel.visible { display: block; }
+
+    .admin-panel h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      color: var(--green);
+    }
+
+    .admin-form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 560px) {
+      .admin-form-row { grid-template-columns: 1fr; }
+    }
+
+    .btn-save {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      font-size: 0.88rem;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(46,158,82,0.25);
+    }
+
+    .btn-save:hover { opacity: 0.9; }
+
+    .btn-danger {
+      background: transparent;
+      color: #c0125e;
+      border: 1.5px solid rgba(255,20,147,0.3);
+      padding: 10px 22px;
+      font-size: 0.88rem;
+      border-radius: 10px;
+    }
+
+    .btn-danger:hover {
+      background: #fff0f5;
+      border-color: var(--pink);
+    }
+
+    .admin-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .closed-banner {
+      background: #fff0f5;
+      border: 2px solid rgba(255,20,147,0.3);
+      color: #c0125e;
+      border-radius: 12px;
+      padding: 14px 20px;
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 0.95rem;
+    }
+
+    footer {
+      text-align: center;
+      color: #ccc;
+      font-size: 0.78rem;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>🀄 Mahjong Night</h1>
+    <p class="tagline">Two tables · Eight seats · One unforgettable game</p>
+  </header>
+
+  <!-- Event Details -->
+  <div class="event-card" id="eventCard">
+    <div class="event-detail">
+      <span class="label">Date</span>
+      <span class="value" id="dispDate">—</span>
+    </div>
+    <div class="event-detail">
+      <span class="label">Time Slot</span>
+      <span class="value" id="dispTime">—</span>
+    </div>
+    <div class="event-detail">
+      <span class="label">Location</span>
+      <span class="value" id="dispLocation">—</span>
+    </div>
+    <div class="event-detail">
+      <span class="label">RSVP By</span>
+      <span class="value" id="dispRsvp">—</span>
+    </div>
+  </div>
+
+  <!-- Closed Banner -->
+  <div class="closed-banner" id="closedBanner">
+    🔒 RSVPs are now closed. We'll see you next time!
+  </div>
+
+  <!-- Tables -->
+  <div class="tables-row">
+    <div class="table-card">
+      <div class="table-header">
+        <h2>Table 1</h2>
+        <span class="seat-count" id="t1Count">0 / 4 seats</span>
+      </div>
+      <div class="seats-list" id="t1Seats"></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <h2>Table 2</h2>
+        <span class="seat-count" id="t2Count">0 / 4 seats</span>
+      </div>
+      <div class="seats-list" id="t2Seats"></div>
+    </div>
+  </div>
+
+  <!-- Waitlist -->
+  <div class="waitlist-card">
+    <div class="waitlist-header">
+      <h2>Waitlist</h2>
+      <span class="badge" id="waitlistBadge" style="display:none"></span>
+    </div>
+    <div id="waitlistContent">
+      <div class="waitlist-empty">All clear — no one waiting yet.</div>
+    </div>
+  </div>
+
+  <!-- Sign-up Form -->
+  <div class="signup-card" id="signupSection">
+    <h2>Claim Your Seat</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="inputName">Full Name</label>
+        <input type="text" id="inputName" placeholder="Your name" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="inputEmail">Email</label>
+        <input type="email" id="inputEmail" placeholder="your@email.com" autocomplete="email" />
+      </div>
+    </div>
+    <button class="btn btn-primary" id="signupBtn" onclick="handleSignup()">
+      Count Me In →
+    </button>
+    <div class="form-message" id="formMessage"></div>
+  </div>
+
+  <!-- Admin Toggle -->
+  <div class="admin-toggle">
+    <button class="btn btn-admin" onclick="toggleAdmin()">⚙️ Admin</button>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="admin-panel" id="adminPanel">
+    <h2>Event Settings</h2>
+    <div class="admin-form-row">
+      <div class="form-group">
+        <label for="adminDate">Date</label>
+        <input type="date" id="adminDate" />
+      </div>
+      <div class="form-group">
+        <label for="adminTime">Time Slot</label>
+        <input type="text" id="adminTime" placeholder="e.g. 7:00 PM – 10:00 PM" />
+      </div>
+    </div>
+    <div class="admin-form-row">
+      <div class="form-group">
+        <label for="adminLocation">Location</label>
+        <input type="text" id="adminLocation" placeholder="Address or venue name" />
+      </div>
+      <div class="form-group">
+        <label for="adminRsvp">RSVP Deadline</label>
+        <input type="datetime-local" id="adminRsvp" />
+      </div>
+    </div>
+    <div class="admin-actions">
+      <button class="btn btn-save" onclick="saveEventDetails()">💾 Save Changes</button>
+      <button class="btn btn-danger" onclick="confirmReset()">🗑 Reset All Sign-ups</button>
+    </div>
+    <div class="form-message" id="adminMessage" style="margin-top:12px"></div>
+  </div>
+
+  <footer>🀄 Mahjong Night &mdash; good company, great tiles</footer>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────
+  const STORAGE_KEY = 'mahjong_data';
+
+  function loadData() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || getDefaultData();
+    } catch {
+      return getDefaultData();
+    }
+  }
+
+  function saveData(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function getDefaultData() {
+    return {
+      event: { date: '', time: '', location: '585 Maplewood Rd, Wayne, PA', rsvpDeadline: '' },
+      seats: [],      // { id, name, email, table, seat }
+      waitlist: []    // { id, name, email }
+    };
+  }
+
+  // ── Render ─────────────────────────────────────────────
+  function render() {
+    const data = loadData();
+    renderEventDetails(data.event);
+    renderTables(data.seats);
+    renderWaitlist(data.waitlist);
+    renderDeadlineState(data.event);
+    populateAdminForm(data.event);
+  }
+
+  function renderEventDetails(event) {
+    const dateEl = document.getElementById('dispDate');
+    if (event.date) {
+      const d = new Date(event.date + 'T00:00:00');
+      dateEl.textContent = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+      dateEl.className = 'value';
+    } else {
+      dateEl.textContent = '—';
+      dateEl.className = 'value unset';
+    }
+
+    const timeEl = document.getElementById('dispTime');
+    timeEl.textContent = event.time || '—';
+    timeEl.className = 'value' + (event.time ? '' : ' unset');
+
+    const locEl = document.getElementById('dispLocation');
+    locEl.textContent = event.location || '—';
+    locEl.className = 'value' + (event.location ? '' : ' unset');
+
+    const rsvpEl = document.getElementById('dispRsvp');
+    if (event.rsvpDeadline) {
+      const d = new Date(event.rsvpDeadline);
+      rsvpEl.textContent = d.toLocaleDateString('en-US', { month:'short', day:'numeric' }) +
+        ' at ' + d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+      rsvpEl.className = 'value';
+    } else {
+      rsvpEl.textContent = '—';
+      rsvpEl.className = 'value unset';
+    }
+  }
+
+  function renderTables(seats) {
+    for (let t = 1; t <= 2; t++) {
+      const container = document.getElementById('t' + t + 'Seats');
+      const countEl   = document.getElementById('t' + t + 'Count');
+      container.innerHTML = '';
+      let filled = 0;
+
+      for (let seatNum = 1; seatNum <= 4; seatNum++) {
+        const occupant = seats.find(s => s.table === t && s.seat === seatNum);
+        const div = document.createElement('div');
+        div.className = 'seat ' + (occupant ? 'occupied' : 'empty');
+
+        if (occupant) {
+          filled++;
+          div.innerHTML =
+            '<div class="seat-icon">' + getInitials(occupant.name) + '</div>' +
+            '<div class="seat-info">' +
+              '<div class="seat-name">' + escHtml(occupant.name) + '</div>' +
+              '<div class="seat-email">' + escHtml(occupant.email) + '</div>' +
+            '</div>' +
+            '<button class="seat-remove" title="Remove" onclick="removeSeat(\'' + occupant.id + '\')">✕</button>';
+        } else {
+          div.innerHTML =
+            '<div class="seat-icon">—</div>' +
+            '<div class="seat-info"><div class="seat-name">Open seat</div></div>';
+        }
+        container.appendChild(div);
+      }
+      countEl.textContent = filled + ' / 4 seats';
+    }
+  }
+
+  function renderWaitlist(waitlist) {
+    const content = document.getElementById('waitlistContent');
+    const badge   = document.getElementById('waitlistBadge');
+
+    if (waitlist.length === 0) {
+      content.innerHTML = '<div class="waitlist-empty">No one on the waitlist yet.</div>';
+      badge.style.display = 'none';
+      return;
+    }
+
+    badge.style.display = 'inline';
+    badge.textContent = waitlist.length;
+
+    const list = document.createElement('div');
+    list.className = 'waitlist-list';
+
+    waitlist.forEach(function(person, idx) {
+      const item = document.createElement('div');
+      item.className = 'waitlist-item';
+      item.innerHTML =
+        '<div class="waitlist-pos">' + (idx + 1) + '</div>' +
+        '<div class="waitlist-info">' +
+          '<div class="waitlist-name">' + escHtml(person.name) + '</div>' +
+          '<div class="waitlist-email">' + escHtml(person.email) + '</div>' +
+        '</div>' +
+        '<button class="waitlist-remove" title="Remove" onclick="removeWaitlist(\'' + person.id + '\')">✕</button>';
+      list.appendChild(item);
+    });
+
+    content.innerHTML = '';
+    content.appendChild(list);
+  }
+
+  function renderDeadlineState(event) {
+    const closed = isDeadlinePassed(event.rsvpDeadline);
+    document.getElementById('closedBanner').style.display  = closed ? 'block' : 'none';
+    document.getElementById('signupSection').style.display = closed ? 'none'  : 'block';
+  }
+
+  function populateAdminForm(event) {
+    document.getElementById('adminDate').value     = event.date         || '';
+    document.getElementById('adminTime').value     = event.time         || '';
+    document.getElementById('adminLocation').value = event.location     || '';
+    document.getElementById('adminRsvp').value     = event.rsvpDeadline || '';
+  }
+
+  // ── Helpers ────────────────────────────────────────────
+  function isDeadlinePassed(deadline) {
+    if (!deadline) return false;
+    return new Date(deadline) < new Date();
+  }
+
+  function getInitials(name) {
+    return name.trim().split(/\s+/).map(function(w){ return w[0]; }).slice(0,2).join('').toUpperCase();
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  function uid() {
+    return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+
+  function showMessage(elId, type, text) {
+    const el = document.getElementById(elId);
+    el.className = 'form-message ' + type;
+    el.textContent = text;
+    if (type !== 'error') {
+      setTimeout(function(){ el.className = 'form-message'; el.textContent = ''; }, 5000);
+    }
+  }
+
+  // ── Sign-up ────────────────────────────────────────────
+  function handleSignup() {
+    const name  = document.getElementById('inputName').value.trim();
+    const email = document.getElementById('inputEmail').value.trim().toLowerCase();
+
+    if (!name) { showMessage('formMessage','error','Please enter your name.'); return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showMessage('formMessage','error','Please enter a valid email address.');
+      return;
+    }
+
+    const data = loadData();
+
+    if (isDeadlinePassed(data.event.rsvpDeadline)) {
+      showMessage('formMessage','error','RSVP deadline has passed.');
+      return;
+    }
+
+    const allPeople = data.seats.concat(data.waitlist);
+    if (allPeople.some(function(p){ return p.email === email; })) {
+      showMessage('formMessage','error','This email is already registered.');
+      return;
+    }
+
+    if (data.seats.length < 8) {
+      const next = findNextSeat(data.seats);
+      data.seats.push({ id: uid(), name: name, email: email, table: next.table, seat: next.seat });
+      saveData(data);
+      document.getElementById('inputName').value  = '';
+      document.getElementById('inputEmail').value = '';
+      showMessage('formMessage','success','🎉 You\'re in! Assigned to Table ' + next.table + ', Seat ' + next.seat + '.');
+    } else {
+      data.waitlist.push({ id: uid(), name: name, email: email });
+      saveData(data);
+      document.getElementById('inputName').value  = '';
+      document.getElementById('inputEmail').value = '';
+      showMessage('formMessage','info','All seats are full. You\'ve been added to the waitlist at position #' + data.waitlist.length + '.');
+    }
+
+    render();
+  }
+
+  function findNextSeat(seats) {
+    for (var t = 1; t <= 2; t++) {
+      for (var s = 1; s <= 4; s++) {
+        if (!seats.find(function(x){ return x.table === t && x.seat === s; })) {
+          return { table: t, seat: s };
+        }
+      }
+    }
+    return null;
+  }
+
+  // ── Admin Actions ──────────────────────────────────────
+  function removeSeat(id) {
+    if (!confirm('Remove this person from the table?')) return;
+    const data = loadData();
+    data.seats = data.seats.filter(function(s){ return s.id !== id; });
+
+    // Auto-promote first person on waitlist
+    if (data.waitlist.length > 0) {
+      const next     = data.waitlist.shift();
+      const nextSeat = findNextSeat(data.seats);
+      data.seats.push({ id: next.id, name: next.name, email: next.email, table: nextSeat.table, seat: nextSeat.seat });
+    }
+
+    saveData(data);
+    render();
+  }
+
+  function removeWaitlist(id) {
+    if (!confirm('Remove this person from the waitlist?')) return;
+    const data = loadData();
+    data.waitlist = data.waitlist.filter(function(w){ return w.id !== id; });
+    saveData(data);
+    render();
+  }
+
+  function saveEventDetails() {
+    const data = loadData();
+    data.event.date         = document.getElementById('adminDate').value;
+    data.event.time         = document.getElementById('adminTime').value.trim();
+    data.event.location     = document.getElementById('adminLocation').value.trim();
+    data.event.rsvpDeadline = document.getElementById('adminRsvp').value;
+    saveData(data);
+    render();
+    showMessage('adminMessage','success','✓ Event details saved.');
+  }
+
+  function confirmReset() {
+    if (!confirm('Reset ALL sign-ups and waitlist? This cannot be undone.')) return;
+    const data = loadData();
+    data.seats    = [];
+    data.waitlist = [];
+    saveData(data);
+    render();
+    showMessage('adminMessage','success','All sign-ups have been cleared.');
+  }
+
+  // ── Admin Toggle ───────────────────────────────────────
+  var adminVisible = false;
+  function toggleAdmin() {
+    adminVisible = !adminVisible;
+    document.getElementById('adminPanel').classList.toggle('visible', adminVisible);
+    document.body.classList.toggle('admin-mode', adminVisible);
+  }
+
+  // ── Enter key on form ──────────────────────────────────
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      var focused = document.activeElement;
+      if (focused && (focused.id === 'inputName' || focused.id === 'inputEmail')) {
+        handleSignup();
+      }
+    }
+  });
+
+  // ── Boot ───────────────────────────────────────────────
+  render();
+</script>
+</body>
+</html>
